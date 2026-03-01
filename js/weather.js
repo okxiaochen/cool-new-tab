@@ -24,16 +24,16 @@ const Weather = {
         let locations = [];
 
         // Always try geolocation first — local weather goes on top
-        // Use cached geo location if available to avoid re-requesting GPS every load
+        // Use cached geo location if available and fresh (refresh every 1 hour)
         const cachedGeo = await Storage.getCache('geoLocation');
-        if (cachedGeo && cachedGeo.lat) {
+        const geoFresh = cachedGeo && cachedGeo.lat && cachedGeo.fetchedAt && (Date.now() - cachedGeo.fetchedAt) < 60 * 60 * 1000;
+        if (geoFresh) {
             locations.push({ name: cachedGeo.name, lat: cachedGeo.lat, lon: cachedGeo.lon, _isGeo: true });
         } else {
             try {
                 const pos = await this._getGeolocation();
                 const lat = pos.coords.latitude;
                 const lon = pos.coords.longitude;
-                // Reverse geocode to get city name
                 let cityName = null;
                 try {
                     const geoRes = await fetch(`https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${apiKey}`);
@@ -41,14 +41,13 @@ const Weather = {
                         const geoData = await geoRes.json();
                         if (geoData.length > 0) {
                             cityName = geoData[0].name + (geoData[0].state ? `, ${geoData[0].state}` : '');
-                            // Also save country for news
                             if (geoData[0].country) {
                                 await Storage.set('newsCountry', geoData[0].country.toLowerCase());
                             }
                         }
                     }
-                } catch (e) { /* use null name, will fall back to API response name */ }
-                await Storage.setCache('geoLocation', { name: cityName, lat, lon });
+                } catch (e) { /* use null name */ }
+                await Storage.setCache('geoLocation', { name: cityName, lat, lon, fetchedAt: Date.now() });
                 locations.push({ name: cityName, lat, lon, _isGeo: true });
             } catch (e) {
                 console.warn('[CoolNewTab] Geolocation unavailable:', e.message);
@@ -192,7 +191,7 @@ const Weather = {
                 reject(new Error('Geolocation not supported'));
                 return;
             }
-            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000, enableHighAccuracy: false });
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 30000, enableHighAccuracy: false, maximumAge: 600000 });
         });
     },
 

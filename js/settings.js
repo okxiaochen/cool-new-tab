@@ -346,13 +346,13 @@ const Settings = {
       await this.open();
     });
 
-    // Use My Location button
+    // Use My Location button — updates the auto-detected geolocation
     content.querySelector('#use-my-location-btn')?.addEventListener('click', async () => {
       const btn = content.querySelector('#use-my-location-btn');
       if (btn) btn.innerHTML = '⏳ Getting location...';
       try {
         const pos = await new Promise((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 60000, enableHighAccuracy: false, maximumAge: 600000 });
         });
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
@@ -376,11 +376,16 @@ const Settings = {
         if (countryCode) {
           await Storage.set('newsCountry', countryCode.toLowerCase());
         }
-        const locations = currentSettings.weatherLocations || [];
-        locations.push({ name, lat, lon });
-        currentSettings.weatherLocations = locations;
-        await Storage.set('weatherLocations', locations);
-        await this.open();
+        // Update geo cache (not weatherLocations — weather.js handles geo separately)
+        const oldGeo = await Storage.getCache('geoLocation');
+        if (oldGeo && oldGeo.name) {
+          // Clear cached weather for the old location
+          await Storage.setCache(`weather_${oldGeo.name}_F`, null);
+          await Storage.setCache(`weather_${oldGeo.name}_C`, null);
+        }
+        await Storage.setCache('geoLocation', { name, lat, lon, fetchedAt: Date.now() });
+        if (btn) btn.innerHTML = '✓ Updated';
+        setTimeout(() => location.reload(), 800);
       } catch (err) {
         if (btn) btn.innerHTML = '❌ Location denied';
         console.error('[CoolNewTab] Geolocation error:', err);
