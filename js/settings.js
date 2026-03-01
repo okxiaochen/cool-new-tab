@@ -24,6 +24,7 @@ const TIMEZONE_OPTIONS = [
 ];
 
 const BACKGROUND_THEMES = [
+  { value: 'random', label: 'Random (All)' },
   { value: 'nature', label: 'Nature' },
   { value: 'mountains', label: 'Mountains' },
   { value: 'ocean', label: 'Ocean' },
@@ -214,6 +215,16 @@ const Settings = {
           </label>
         </div>
         <div class="settings-field">
+          <label for="setting-google-account">Google Account Index</label>
+          <select id="setting-google-account">
+            <option value="0" ${(settings.googleAccountIndex || 0) == 0 ? 'selected' : ''}>0 (Default)</option>
+            <option value="1" ${(settings.googleAccountIndex || 0) == 1 ? 'selected' : ''}>1</option>
+            <option value="2" ${(settings.googleAccountIndex || 0) == 2 ? 'selected' : ''}>2</option>
+            <option value="3" ${(settings.googleAccountIndex || 0) == 3 ? 'selected' : ''}>3</option>
+          </select>
+          <p class="settings-hint" style="margin-top:4px;margin-bottom:0">If calendar links open with the wrong Google account, change this to match your account position in Chrome.</p>
+        </div>
+        <div class="settings-field">
           <button class="connect-btn" id="connect-calendar-btn" style="margin-top:4px">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -282,6 +293,7 @@ const Settings = {
         temperatureUnit: content.querySelector('#setting-temp-unit')?.value || 'F',
         showWorldClock: content.querySelector('#setting-show-worldclock')?.checked ?? true,
         showCalendar: content.querySelector('#setting-show-calendar')?.checked ?? true,
+        googleAccountIndex: parseInt(content.querySelector('#setting-google-account')?.value || '0'),
         showNews: content.querySelector('#setting-show-news')?.checked ?? true,
         newsCategory: content.querySelector('#setting-news-category')?.value || 'general',
         unsplashApiKey: content.querySelector('#setting-unsplash-key')?.value?.trim() || '',

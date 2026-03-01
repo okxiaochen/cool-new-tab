@@ -12,7 +12,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       if (!apiKey) return;
 
       const theme = settings.backgroundTheme || 'nature';
-      const url = `https://api.unsplash.com/photos/random?query=${encodeURIComponent(theme)}&orientation=landscape&client_id=${apiKey}`;
+      const queryParam = theme && theme !== 'random' ? `query=${encodeURIComponent(theme)}&` : '';
+      const url = `https://api.unsplash.com/photos/random?${queryParam}orientation=landscape&client_id=${apiKey}`;
 
       const res = await fetch(url);
       if (!res.ok) return;
@@ -20,9 +21,12 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
       await chrome.storage.local.set({
         prefetchedBackground: {
-          url: json.urls.regular,
+          url: `${json.urls.raw}&w=5120&q=85&fit=crop`,
           photographer: json.user.name,
           photographerUrl: json.user.links.html,
+          photoUrl: json.links.html,
+          photoTitle: json.description || json.alt_description || '',
+          photoLocation: (json.location && json.location.name) || '',
           downloadLocation: json.links.download_location,
           fetchedAt: Date.now()
         }

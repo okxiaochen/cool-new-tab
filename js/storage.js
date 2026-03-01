@@ -15,6 +15,7 @@ const DEFAULTS = {
     worldClocks: [], // [{ label: 'Tokyo', timezone: 'Asia/Tokyo' }]
     newsCategory: 'general',
     calendarAccounts: [], // [{ email, token }]
+    googleAccountIndex: 0, // Chrome Google account index (0 = default, 1 = second, etc.)
     showCalendar: true,
     showNews: true,
     showWeather: true,

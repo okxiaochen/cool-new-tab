@@ -2,7 +2,7 @@
 // Click to toggle F/C, geocoding for city names, auto geolocation
 
 const Weather = {
-    _CACHE_DURATION: 30 * 60 * 1000,
+    _CACHE_DURATION: 10 * 60 * 1000,
 
     async init() {
         const settings = await Storage.get();
@@ -151,16 +151,17 @@ const Weather = {
 
         const card = document.createElement('div');
         card.className = 'weather-card';
+        const cityName = (loc.name || data.name || '').split(',')[0].trim();
         card.innerHTML = `
-      <div class="weather-location">${loc.name || data.name}</div>
+      <div class="weather-location">${cityName}</div>
       <div class="weather-main">
         <img class="weather-icon" src="${iconUrl}" alt="${data.weather[0].description}" />
         <span class="weather-temp">${Math.round(data.main.temp)}${unitSymbol}</span>
       </div>
       <div class="weather-desc">${data.weather[0].description}</div>
       <div class="weather-details">
-        <span>💧 ${data.main.humidity}%</span>
-        <span>💨 ${Math.round(data.wind.speed)} ${unit === 'C' ? 'm/s' : 'mph'}</span>
+        <span>${data.main.humidity}%</span>
+        <span>${Math.round(data.wind.speed)} ${unit === 'C' ? 'm/s' : 'mph'}</span>
       </div>
     `;
         container.appendChild(card);

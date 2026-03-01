@@ -10,7 +10,7 @@ const Background = {
         // Try to use cached / prefetched background first for instant load
         const cached = await Storage.getCache('currentBackground');
         if (cached && cached.url && !forceRefresh) {
-            this._applyBackground(cached.url, cached.photographer, cached.photographerUrl);
+            this._applyBackground(cached.url, cached.photographer, cached.photographerUrl, cached.photoUrl, cached.photoTitle, cached.photoLocation);
 
             // Check if we need a fresh one (also refresh if theme changed)
             const themeChanged = cached.theme && cached.theme !== (settings.backgroundTheme || 'nature');
@@ -23,7 +23,7 @@ const Background = {
         if (!forceRefresh) {
             const prefetched = await Storage.getCache('prefetchedBackground');
             if (prefetched && prefetched.url) {
-                this._applyBackground(prefetched.url, prefetched.photographer, prefetched.photographerUrl);
+                this._applyBackground(prefetched.url, prefetched.photographer, prefetched.photographerUrl, prefetched.photoUrl, prefetched.photoTitle, prefetched.photoLocation);
                 await Storage.setCache('currentBackground', prefetched);
                 await Storage.setCache('prefetchedBackground', null);
                 return;
@@ -51,7 +51,8 @@ const Background = {
 
     async _fetchNewImage(apiKey, theme) {
         try {
-            const url = `https://api.unsplash.com/photos/random?query=${encodeURIComponent(theme)}&orientation=landscape&client_id=${apiKey}`;
+            const queryParam = theme && theme !== 'random' ? `query=${encodeURIComponent(theme)}&` : '';
+            const url = `https://api.unsplash.com/photos/random?${queryParam}orientation=landscape&client_id=${apiKey}`;
             const res = await fetch(url);
             if (!res.ok) {
                 console.warn('[CoolNewTab] Unsplash API error:', res.status);
@@ -59,15 +60,21 @@ const Background = {
                 return;
             }
             const json = await res.json();
-            const imgUrl = json.urls.regular;
+            const imgUrl = `${json.urls.raw}&w=5120&q=85&fit=crop`;
             const photographer = json.user.name;
             const photographerUrl = json.user.links.html;
+            const photoUrl = json.links.html;
+            const photoTitle = json.description || json.alt_description || '';
+            const photoLocation = (json.location && json.location.name) || '';
 
-            this._applyBackground(imgUrl, photographer, photographerUrl);
+            this._applyBackground(imgUrl, photographer, photographerUrl, photoUrl, photoTitle, photoLocation);
             await Storage.setCache('currentBackground', {
                 url: imgUrl,
                 photographer,
                 photographerUrl,
+                photoUrl,
+                photoTitle,
+                photoLocation,
                 theme,
                 fetchedAt: Date.now()
             });
@@ -77,11 +84,10 @@ const Background = {
         }
     },
 
-    _applyBackground(url, photographer, photographerUrl) {
+    _applyBackground(url, photographer, photographerUrl, photoUrl, photoTitle, photoLocation) {
         const bg = document.getElementById('background');
         if (!bg) return;
 
-        // Preload the image, then crossfade
         const img = new Image();
         img.onload = () => {
             bg.style.backgroundImage = `url(${url})`;
@@ -90,11 +96,33 @@ const Background = {
         img.onerror = () => this._applyFallback();
         img.src = url;
 
-        // Update photographer credit
+        // Build two-line credit
         const credit = document.getElementById('photo-credit');
         if (credit && photographer) {
-            credit.innerHTML = `Photo by <a href="${photographerUrl}?utm_source=cool_new_tab&utm_medium=referral" target="_blank" rel="noopener">${photographer}</a> on <a href="https://unsplash.com?utm_source=cool_new_tab&utm_medium=referral" target="_blank" rel="noopener">Unsplash</a>`;
+            // Line 1: title + location
+            let line1Parts = [];
+            if (photoTitle) {
+                line1Parts.push(`<a href="${photoUrl}?utm_source=cool_new_tab&utm_medium=referral" target="_blank" rel="noopener">${photoTitle}</a>`);
+            }
+            if (photoLocation) {
+                const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(photoLocation)}`;
+                line1Parts.push(`<a href="${mapsUrl}" target="_blank" rel="noopener">📍 ${photoLocation}</a>`);
+            }
+            const line1 = line1Parts.length > 0 ? `<div class="photo-credit-line">${line1Parts.join(' · ')}</div>` : '';
+
+            // Line 2: photographer + unsplash + refresh
+            const line2 = `<div class="photo-credit-line">Photo by <a href="${photographerUrl}?utm_source=cool_new_tab&utm_medium=referral" target="_blank" rel="noopener">${photographer}</a> on <a href="https://unsplash.com?utm_source=cool_new_tab&utm_medium=referral" target="_blank" rel="noopener">Unsplash</a> · <a href="#" id="refresh-bg-btn" title="New background">↻</a></div>`;
+
+            credit.innerHTML = line1 + line2;
             credit.style.display = 'block';
+
+            const refreshBtn = document.getElementById('refresh-bg-btn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    Background.init(true);
+                });
+            }
         }
     },
 

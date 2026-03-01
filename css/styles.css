@@ -77,9 +77,10 @@ body {
   inset: 0;
   z-index: 1;
   background: radial-gradient(ellipse at center,
-      rgba(0, 0, 0, 0.15) 0%,
-      rgba(0, 0, 0, 0.45) 70%,
-      rgba(0, 0, 0, 0.65) 100%);
+      rgba(0, 0, 0, 0.25) 0%,
+      rgba(0, 0, 0, 0.35) 40%,
+      rgba(0, 0, 0, 0.55) 80%,
+      rgba(0, 0, 0, 0.7) 100%);
   pointer-events: none;
 }
 
@@ -97,21 +98,28 @@ body {
 /* --- Top Right Area --- */
 .top-right {
   display: flex;
-  justify-content: flex-end;
-  align-items: flex-start;
-  gap: 12px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
 }
 
+.top-right-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.top-right>.top-right-row>.widget,
 .top-right>.widget {
   background: transparent;
   border: none;
   box-shadow: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  padding: 8px 12px;
+  padding: 4px 0;
 }
 
+.top-right>.top-right-row>.widget:hover,
 .top-right>.widget:hover {
   transform: none;
   box-shadow: none;
@@ -135,12 +143,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 10px 0 20px;
+  padding: 10px 0 12vh;
 }
 
 .clock-time {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  font-size: clamp(6rem, 14vw, 10rem);
+  font-size: clamp(5.5rem, 10vw, 14rem);
   font-weight: 600;
   letter-spacing: 2px;
   line-height: 1;
@@ -149,21 +157,21 @@ body {
 }
 
 .clock-date {
-  font-size: clamp(0.9rem, 2vw, 1.15rem);
-  font-weight: 400;
+  font-size: clamp(0.95rem, 1.5vw, 1.8rem);
+  font-weight: 600;
   color: var(--text-secondary);
   margin-top: 8px;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.4);
 }
 
 .greeting {
-  font-size: clamp(1.2rem, 3vw, 1.8rem);
-  font-weight: 300;
+  font-size: clamp(1.25rem, 2.2vw, 2.8rem);
+  font-weight: 500;
   color: var(--text-primary);
   margin-top: 20px;
-  text-shadow: 0 1px 20px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
 }
 
 .quote {
@@ -174,19 +182,20 @@ body {
 }
 
 .quote-text {
-  font-size: clamp(0.85rem, 1.5vw, 1rem);
-  font-weight: 300;
+  font-size: clamp(0.9rem, 1.2vw, 1.4rem);
+  font-weight: 500;
   font-style: italic;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   line-height: 1.6;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
 }
 
 .quote-author {
-  font-size: 0.8rem;
-  font-weight: 400;
-  color: var(--text-tertiary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
   margin-top: 6px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
 }
 
 /* --- Glass Widget Base --- */
@@ -216,114 +225,125 @@ body {
 #weather-widget {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  gap: 0;
+  align-items: center;
+  gap: 20px;
 }
 
 .weather-card {
   text-align: center;
-  padding: 0 14px;
+  padding: 0;
+  position: relative;
 }
 
-.weather-card+.weather-card {
-  border-left: 1px solid rgba(255, 255, 255, 0.15);
+.weather-card+.weather-card::before {
+  display: none;
 }
 
 .weather-location {
-  font-size: 0.72rem;
+  font-size: 0.62rem;
   font-weight: 500;
   color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .weather-main {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  margin: 2px 0;
+  gap: 2px;
+  margin: 1px 0;
 }
 
 .weather-icon {
-  width: 36px;
-  height: 36px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  width: 28px;
+  height: 28px;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
 }
 
 .weather-temp {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 600;
+  letter-spacing: -0.5px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .weather-desc {
-  font-size: 0.72rem;
+  font-size: 0.62rem;
   color: var(--text-secondary);
   text-transform: capitalize;
+  font-weight: 400;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .weather-details {
   display: flex;
   justify-content: center;
-  gap: 10px;
-  margin-top: 4px;
-  font-size: 0.68rem;
+  gap: 8px;
+  margin-top: 2px;
+  font-size: 0.58rem;
   color: var(--text-tertiary);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* --- World Clock Widget --- */
 #world-clock-widget {
-  min-width: 120px;
+  min-width: 110px;
 }
 
 .world-clock-card {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 5px 0;
+  padding: 3px 0;
 }
 
 .world-clock-card+.world-clock-card {
-  border-top: 1px solid var(--glass-border);
+  border-top: none;
 }
 
 .wc-city {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
+  font-size: 0.62rem;
+  color: var(--text-tertiary);
   flex: 1;
-  min-width: 60px;
+  min-width: 55px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 400;
 }
 
 .wc-time {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
 .wc-day {
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   color: var(--text-tertiary);
   text-transform: uppercase;
+  opacity: 0.7;
 }
 
 /* --- Calendar Widget (Compact, Top Right) --- */
 #calendar-widget {
-  min-width: 180px;
+  min-width: 160px;
 }
 
 .calendar-compact {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .calendar-compact-header {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: var(--text-secondary);
+  font-size: 0.62rem;
+  font-weight: 400;
+  color: var(--text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -333,8 +353,9 @@ body {
 }
 
 .calendar-compact-text {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-weight: 300;
 }
 
 .calendar-badge {
@@ -351,6 +372,12 @@ body {
   font-weight: 600;
 }
 
+.calendar-compact-event-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .calendar-compact-event {
   display: flex;
   align-items: center;
@@ -361,6 +388,8 @@ body {
   text-decoration: none;
   color: inherit;
   transition: background var(--transition-fast);
+  flex: 1;
+  min-width: 0;
 }
 
 .calendar-compact-event:hover {
@@ -412,6 +441,12 @@ body {
   font-size: 0.9rem;
 }
 
+.calendar-event-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .calendar-event {
   display: flex;
   align-items: center;
@@ -422,10 +457,36 @@ body {
   text-decoration: none;
   color: inherit;
   transition: background var(--transition-fast);
+  flex: 1;
+  min-width: 0;
 }
 
 .calendar-event:hover {
   background: rgba(255, 255, 255, 0.08);
+}
+
+/* Join Button */
+.calendar-join-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(108, 159, 255, 0.15);
+  color: var(--accent);
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.calendar-join-btn:hover {
+  background: rgba(108, 159, 255, 0.3);
+  color: #fff;
 }
 
 .event-color {
@@ -577,6 +638,12 @@ body {
   z-index: 3;
   font-size: 0.65rem;
   color: var(--text-tertiary);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  line-height: 1.6;
+}
+
+.photo-credit-line:first-child {
+  opacity: 0.8;
 }
 
 .photo-credit a {
