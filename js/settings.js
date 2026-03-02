@@ -352,7 +352,7 @@ const Settings = {
       if (btn) btn.innerHTML = '⏳ Getting location...';
       try {
         const pos = await new Promise((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 60000, enableHighAccuracy: false, maximumAge: 600000 });
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 60000, enableHighAccuracy: true, maximumAge: 600000 });
         });
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;

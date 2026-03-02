@@ -103,6 +103,8 @@ const Background = {
             let line1Parts = [];
             if (photoTitle) {
                 line1Parts.push(`<a href="${photoUrl}?utm_source=cool_new_tab&utm_medium=referral" target="_blank" rel="noopener">${photoTitle}</a>`);
+            } else if (photoUrl) {
+                line1Parts.push(`<a href="${photoUrl}?utm_source=cool_new_tab&utm_medium=referral" target="_blank" rel="noopener">View photo</a>`);
             }
             if (photoLocation) {
                 const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(photoLocation)}`;

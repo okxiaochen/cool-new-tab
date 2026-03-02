@@ -50,7 +50,11 @@ const Weather = {
                 await Storage.setCache('geoLocation', { name: cityName, lat, lon, fetchedAt: Date.now() });
                 locations.push({ name: cityName, lat, lon, _isGeo: true });
             } catch (e) {
-                console.warn('[CoolNewTab] Geolocation unavailable:', e.message);
+                console.warn('[CoolNewTab] Geolocation unavailable, falling back to cached:', e.message);
+                // Fallback: use stale cached geo instead of showing nothing
+                if (cachedGeo && cachedGeo.lat) {
+                    locations.push({ name: cachedGeo.name, lat: cachedGeo.lat, lon: cachedGeo.lon, _isGeo: true });
+                }
             }
         }
 
@@ -98,6 +102,48 @@ const Weather = {
         });
 
         container.classList.add('fade-in');
+
+        // Periodic geolocation refresh (every 30 minutes)
+        this._startGeoRefresh(apiKey, settings.temperatureUnit);
+    },
+
+    _geoRefreshTimer: null,
+    _GEO_REFRESH_INTERVAL: 30 * 60 * 1000,
+
+    _startGeoRefresh(apiKey, unit) {
+        if (this._geoRefreshTimer) return; // already running
+        this._geoRefreshTimer = setInterval(async () => {
+            try {
+                console.log('[CoolNewTab] Refreshing geolocation...');
+                const pos = await this._getGeolocation();
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                let cityName = null;
+                try {
+                    const geoRes = await fetch(`https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${apiKey}`);
+                    if (geoRes.ok) {
+                        const geoData = await geoRes.json();
+                        if (geoData.length > 0) {
+                            cityName = geoData[0].name + (geoData[0].state ? `, ${geoData[0].state}` : '');
+                            if (geoData[0].country) {
+                                await Storage.set('newsCountry', geoData[0].country.toLowerCase());
+                            }
+                        }
+                    }
+                } catch (e) { /* use null name */ }
+                const oldGeo = await Storage.getCache('geoLocation');
+                await Storage.setCache('geoLocation', { name: cityName, lat, lon, fetchedAt: Date.now() });
+                // Clear stale weather cache for old geo location
+                if (oldGeo && oldGeo.name) {
+                    await Storage.setCache(`weather_${oldGeo.name}_F`, null);
+                    await Storage.setCache(`weather_${oldGeo.name}_C`, null);
+                }
+                console.log('[CoolNewTab] Geolocation refreshed:', cityName || 'Unknown');
+            } catch (e) {
+                console.warn('[CoolNewTab] Periodic geolocation refresh failed, keeping cached:', e.message);
+                // Don't update cache — keep existing location
+            }
+        }, this._GEO_REFRESH_INTERVAL);
     },
 
     async _renderLocation(container, loc, apiKey, unit) {
@@ -191,7 +237,7 @@ const Weather = {
                 reject(new Error('Geolocation not supported'));
                 return;
             }
-            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 30000, enableHighAccuracy: false, maximumAge: 600000 });
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 30000, enableHighAccuracy: true, maximumAge: 600000 });
         });
     },
 
