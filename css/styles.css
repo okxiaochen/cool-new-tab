@@ -77,10 +77,10 @@ body {
   inset: 0;
   z-index: 1;
   background: radial-gradient(ellipse at center,
-      rgba(0, 0, 0, 0.25) 0%,
-      rgba(0, 0, 0, 0.35) 40%,
-      rgba(0, 0, 0, 0.55) 80%,
-      rgba(0, 0, 0, 0.7) 100%);
+      rgba(0, 0, 0, 0.05) 0%,
+      rgba(0, 0, 0, 0.1) 40%,
+      rgba(0, 0, 0, 0.18) 80%,
+      rgba(0, 0, 0, 0.25) 100%);
   pointer-events: none;
 }
 
