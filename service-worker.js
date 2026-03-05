@@ -2,6 +2,13 @@
 // Handles periodic background pre-fetching via chrome.alarms
 // Supports both Unsplash (static) and Pexels (dynamic) modes
 
+// Video theme queries for random selection (must match background.js)
+const VIDEO_THEME_QUERIES = [
+  'nature', 'ocean waves', 'mountains landscape', 'aerial landscape',
+  'city timelapse', 'rain', 'sunset clouds', 'forest trees',
+  'snow winter', 'night sky stars', 'fire flames', 'underwater',
+  'aurora borealis', 'clouds sky', 'abstract motion'
+];
 chrome.alarms.create('prefetch-background', { periodInMinutes: 60 });
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
@@ -50,9 +57,12 @@ async function prefetchUnsplashPhoto(apiKey, theme) {
 async function prefetchPexelsVideo(apiKey, theme) {
   if (!apiKey) return;
 
-  const query = theme && theme !== 'random' ? theme : 'nature';
-  const randomPage = Math.floor(Math.random() * 15) + 1;
-  const url = `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&orientation=landscape&per_page=1&page=${randomPage}&size=medium`;
+  const query = theme && theme !== 'random'
+    ? theme
+    : VIDEO_THEME_QUERIES[Math.floor(Math.random() * VIDEO_THEME_QUERIES.length)];
+  const randomPage = Math.floor(Math.random() * 50) + 1;
+  const perPage = 15;
+  const url = `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&orientation=landscape&per_page=${perPage}&page=${randomPage}&size=medium`;
 
   const res = await fetch(url, {
     headers: { 'Authorization': apiKey }
@@ -62,7 +72,9 @@ async function prefetchPexelsVideo(apiKey, theme) {
 
   if (!json.videos || json.videos.length === 0) return;
 
-  const video = json.videos[0];
+  // Pick a random video from the results
+  const video = json.videos[Math.floor(Math.random() * json.videos.length)];
+
   // Pick best mp4 file
   const mp4Files = (video.video_files || []).filter(f => f.file_type === 'video/mp4');
   const hdFile = mp4Files.find(f => f.quality === 'hd' && f.width >= 1920);

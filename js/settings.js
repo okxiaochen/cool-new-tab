@@ -364,6 +364,7 @@ const Settings = {
         await Storage.setCache('prefetchedBackground', null);
         await Storage.setCache('currentVideoBackground', null);
         await Storage.setCache('prefetchedVideoBackground', null);
+        await Storage.setCache('seenVideoIds', null);
       }
 
       // Show save confirmation

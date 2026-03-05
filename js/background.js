@@ -1,6 +1,14 @@
 // Cool New Tab — Background Module
 // Supports Static (Unsplash photo) and Dynamic (Pexels video) modes
 
+// Video theme queries for random selection (excludes 'random' itself)
+const VIDEO_THEME_QUERIES = [
+    'nature', 'ocean waves', 'mountains landscape', 'aerial landscape',
+    'city timelapse', 'rain', 'sunset clouds', 'forest trees',
+    'snow winter', 'night sky stars', 'fire flames', 'underwater',
+    'aurora borealis', 'clouds sky', 'abstract motion'
+];
+
 const Background = {
     async init(forceRefresh = false) {
         const settings = await Storage.get();
@@ -155,10 +163,15 @@ const Background = {
 
     async _fetchNewVideo(apiKey, theme) {
         try {
-            const query = theme && theme !== 'random' ? theme : 'nature';
-            // Randomize page to get variety
-            const randomPage = Math.floor(Math.random() * 15) + 1;
-            const url = `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&orientation=landscape&per_page=1&page=${randomPage}&size=medium`;
+            // When theme is 'random', pick a random theme from all available queries
+            const query = theme && theme !== 'random'
+                ? theme
+                : VIDEO_THEME_QUERIES[Math.floor(Math.random() * VIDEO_THEME_QUERIES.length)];
+
+            // Fetch multiple videos per page and pick one at random for true randomness
+            const randomPage = Math.floor(Math.random() * 50) + 1;
+            const perPage = 15;
+            const url = `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&orientation=landscape&per_page=${perPage}&page=${randomPage}&size=medium`;
 
             const res = await fetch(url, {
                 headers: { 'Authorization': apiKey }
@@ -177,13 +190,27 @@ const Background = {
                 return;
             }
 
-            const video = json.videos[0];
+            // Filter out previously seen videos
+            const seenIds = await this._getSeenVideoIds();
+            let unseen = json.videos.filter(v => !seenIds.has(v.id));
+
+            // If all videos in this batch were seen, clear history and use full list
+            if (unseen.length === 0) {
+                await this._clearSeenVideoIds();
+                unseen = json.videos;
+            }
+
+            // Pick a random video from unseen results
+            const video = unseen[Math.floor(Math.random() * unseen.length)];
             const videoFile = this._pickBestVideoFile(video.video_files);
             if (!videoFile) {
                 console.warn('[CoolNewTab] Pexels: no suitable video file');
                 this._applyFallback();
                 return;
             }
+
+            // Record this video as seen
+            await this._addSeenVideoId(video.id);
 
             const videoData = {
                 videoUrl: videoFile.link,
@@ -305,6 +332,28 @@ const Background = {
             case 'daily': return age > 24 * 60 * 60 * 1000;
             default: return age > 24 * 60 * 60 * 1000;
         }
+    },
+
+    // ========================
+    // SEEN VIDEO TRACKING
+    // ========================
+
+    async _getSeenVideoIds() {
+        const data = await Storage.getCache('seenVideoIds');
+        return new Set(data || []);
+    },
+
+    async _addSeenVideoId(id) {
+        const data = await Storage.getCache('seenVideoIds');
+        const ids = data || [];
+        ids.push(id);
+        // Cap at 500 to avoid unbounded growth
+        if (ids.length > 500) ids.splice(0, ids.length - 500);
+        await Storage.setCache('seenVideoIds', ids);
+    },
+
+    async _clearSeenVideoIds() {
+        await Storage.setCache('seenVideoIds', []);
     },
 
     _renderCredit({ title, titleUrl, location, author, authorUrl, source, sourceUrl }) {
