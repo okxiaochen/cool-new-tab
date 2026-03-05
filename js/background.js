@@ -224,16 +224,45 @@ const Background = {
         if (!bg || !video) return;
 
         bg.classList.add('video-mode');
-        video.src = data.videoUrl;
 
-        video.oncanplay = () => {
-            bg.classList.add('loaded');
-        };
-        video.onerror = () => {
-            console.warn('[CoolNewTab] Video load error, falling back');
-            this._applyFallback();
-        };
-        video.load();
+        // If video already has a src playing, preload new one offscreen first
+        const hasExisting = video.src && !video.paused;
+
+        if (hasExisting) {
+            // Double-buffer: preload in a hidden temp video
+            const temp = document.createElement('video');
+            temp.muted = true;
+            temp.preload = 'auto';
+            temp.src = data.videoUrl;
+
+            temp.oncanplay = () => {
+                // New video ready — swap seamlessly
+                video.src = data.videoUrl;
+                video.load();
+                video.play().catch(() => { });
+                bg.classList.add('loaded');
+                // Cleanup temp
+                temp.src = '';
+                temp.load();
+            };
+            temp.onerror = () => {
+                console.warn('[CoolNewTab] Video preload error, falling back');
+                temp.src = '';
+                this._applyFallback();
+            };
+            temp.load();
+        } else {
+            // First load — no existing video, load directly
+            video.src = data.videoUrl;
+            video.oncanplay = () => {
+                bg.classList.add('loaded');
+            };
+            video.onerror = () => {
+                console.warn('[CoolNewTab] Video load error, falling back');
+                this._applyFallback();
+            };
+            video.load();
+        }
 
         this._renderCredit({
             author: data.videographer,

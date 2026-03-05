@@ -61,36 +61,14 @@ const WorldClock = {
     },
 
     _getRelativeOffset(now, timezone, localOffsetMin) {
-        // Get the target timezone's UTC offset by comparing formatted times
-        // Create a date formatter that gives us the hour in UTC and in the target tz
-        const utcHour = now.getUTCHours() * 60 + now.getUTCMinutes();
+        // Get the target timezone's UTC offset by comparing wall-clock times
+        // This avoids date-boundary issues that formatToParts has
+        const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
+        const tzDate = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+        const targetOffsetMin = Math.round((tzDate - utcDate) / 60000);
 
-        // Get the time in the target timezone
-        const parts = new Intl.DateTimeFormat('en-US', {
-            timeZone: timezone,
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12: false
-        }).formatToParts(now);
-
-        let tzHour = 0, tzMin = 0;
-        for (const p of parts) {
-            if (p.type === 'hour') tzHour = parseInt(p.value);
-            if (p.type === 'minute') tzMin = parseInt(p.value);
-        }
-
-        // Target offset from UTC in minutes
-        let targetOffsetMin = (tzHour * 60 + tzMin) - utcHour;
-        // Normalize to range [-720, 720]
-        if (targetOffsetMin > 720) targetOffsetMin -= 1440;
-        if (targetOffsetMin < -720) targetOffsetMin += 1440;
-
-        // Difference relative to local
-        let diffMin = targetOffsetMin - localOffsetMin;
-        // Normalize
-        if (diffMin > 720) diffMin -= 1440;
-        if (diffMin < -720) diffMin += 1440;
-
+        // Difference relative to local (no normalization — can be >12h legitimately)
+        const diffMin = targetOffsetMin - localOffsetMin;
         const diffHours = diffMin / 60;
         const sign = diffHours >= 0 ? '+' : '';
 
