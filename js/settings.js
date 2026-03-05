@@ -1,6 +1,7 @@
 // Cool New Tab — Settings Panel Module
 
 const TIMEZONE_OPTIONS = [
+  { label: 'UTC', timezone: 'UTC' },
   { label: 'New York', timezone: 'America/New_York' },
   { label: 'Los Angeles', timezone: 'America/Los_Angeles' },
   { label: 'Chicago', timezone: 'America/Chicago' },
