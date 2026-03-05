@@ -218,51 +218,55 @@ const Background = {
         return mp4Files[0];
     },
 
+    // Track which video element is currently active ('a' or 'b')
+    _activeVideoId: null,
+
+    _getVideoElements() {
+        return {
+            a: document.getElementById('background-video-a'),
+            b: document.getElementById('background-video-b')
+        };
+    },
+
     _applyVideoBackground(data) {
         const bg = document.getElementById('background');
-        const video = document.getElementById('background-video');
-        if (!bg || !video) return;
+        const videos = this._getVideoElements();
+        if (!bg || !videos.a || !videos.b) return;
 
         bg.classList.add('video-mode');
 
-        // If video already has a src playing, preload new one offscreen first
-        const hasExisting = video.src && !video.paused;
+        // Pick the inactive video element to load into
+        const nextId = this._activeVideoId === 'a' ? 'b' : 'a';
+        const nextVideo = videos[nextId];
+        const currentVideo = this._activeVideoId ? videos[this._activeVideoId] : null;
 
-        if (hasExisting) {
-            // Double-buffer: preload in a hidden temp video
-            const temp = document.createElement('video');
-            temp.muted = true;
-            temp.preload = 'auto';
-            temp.src = data.videoUrl;
+        nextVideo.src = data.videoUrl;
+        nextVideo.oncanplay = () => {
+            nextVideo.oncanplay = null; // only fire once
+            // Show the new video, hide the old one
+            nextVideo.style.opacity = '1';
+            nextVideo.play().catch(() => { });
+            bg.classList.add('loaded');
 
-            temp.oncanplay = () => {
-                // New video ready — swap seamlessly
-                video.src = data.videoUrl;
-                video.load();
-                video.play().catch(() => { });
-                bg.classList.add('loaded');
-                // Cleanup temp
-                temp.src = '';
-                temp.load();
-            };
-            temp.onerror = () => {
-                console.warn('[CoolNewTab] Video preload error, falling back');
-                temp.src = '';
-                this._applyFallback();
-            };
-            temp.load();
-        } else {
-            // First load — no existing video, load directly
-            video.src = data.videoUrl;
-            video.oncanplay = () => {
-                bg.classList.add('loaded');
-            };
-            video.onerror = () => {
-                console.warn('[CoolNewTab] Video load error, falling back');
-                this._applyFallback();
-            };
-            video.load();
-        }
+            if (currentVideo) {
+                currentVideo.style.opacity = '0';
+                // Clean up old video after transition
+                setTimeout(() => {
+                    currentVideo.pause();
+                    currentVideo.removeAttribute('src');
+                    currentVideo.load();
+                }, 600);
+            }
+
+            this._activeVideoId = nextId;
+        };
+        nextVideo.onerror = () => {
+            console.warn('[CoolNewTab] Video load error, falling back');
+            this._applyFallback();
+        };
+        // Prepare: hide it until ready
+        nextVideo.style.opacity = currentVideo ? '0' : '1';
+        nextVideo.load();
 
         this._renderCredit({
             author: data.videographer,
@@ -275,13 +279,17 @@ const Background = {
 
     _hideVideo() {
         const bg = document.getElementById('background');
-        const video = document.getElementById('background-video');
+        const videos = this._getVideoElements();
         if (bg) bg.classList.remove('video-mode');
-        if (video) {
-            video.pause();
-            video.removeAttribute('src');
-            video.load();
-        }
+        [videos.a, videos.b].forEach(v => {
+            if (v) {
+                v.pause();
+                v.removeAttribute('src');
+                v.load();
+                v.style.opacity = '0';
+            }
+        });
+        this._activeVideoId = null;
     },
 
     // ========================
