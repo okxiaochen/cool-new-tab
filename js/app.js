@@ -11,14 +11,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Initialize clock & greeting (instant, no API)
         Clock.init();
 
-        // Initialize quotes (instant, bundled data)
-        Quotes.render();
-
+        // Initialize fun facts (async — fetches from API, falls back to bundled)
         // Initialize settings panel (event listeners)
         Settings.init();
 
         // Initialize API-dependent modules
         await Promise.allSettled([
+            Quotes.render(),
             Weather.init(),
             WorldClock.init(),
             Calendar.init(),

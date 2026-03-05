@@ -112,7 +112,7 @@ body {
   height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr;
-  padding: 28px 36px;
+  padding: 28px 36px 0;
 }
 
 /* --- Top Right Area --- */
@@ -143,6 +143,7 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  overflow-y: auto;
 }
 
 .center-inner {
@@ -155,7 +156,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 10px 0 12vh;
+  padding: 10px 0 0;
 }
 
 .clock-time {
@@ -196,18 +197,29 @@ body {
 .quote-text {
   font-size: clamp(0.9rem, 1.2vw, 1.4rem);
   font-weight: 500;
-  font-style: italic;
   color: var(--text-primary);
   line-height: 1.6;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
 }
 
 .quote-author {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-top: 6px;
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  margin-top: 8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+}
+
+.quote-punchline {
+  font-size: clamp(0.85rem, 1.1vw, 1.25rem);
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: 6px;
+  line-height: 1.5;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
 }
 
 /* --- Glass Widget Base --- */
@@ -583,6 +595,8 @@ body {
   width: 100%;
   min-height: 0;
   overflow-y: auto;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .news-widget::-webkit-scrollbar {

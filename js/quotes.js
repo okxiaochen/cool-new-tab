@@ -1,216 +1,165 @@
-// Cool New Tab — Quotes Module
-// Bundled curated quotes, one per day based on date hash
+// Cool New Tab — Fun Facts & Jokes Module
+// Fetches daily fun fact + joke from free APIs, caches for 24h,
+// falls back to bundled data when offline or API fails.
 
-const QUOTES = [
-    { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
-    { text: "In the middle of difficulty lies opportunity.", author: "Albert Einstein" },
-    { text: "Simplicity is the ultimate sophistication.", author: "Leonardo da Vinci" },
-    { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
-    { text: "It is during our darkest moments that we must focus to see the light.", author: "Aristotle" },
-    { text: "Life is what happens when you're busy making other plans.", author: "John Lennon" },
-    { text: "The purpose of our lives is to be happy.", author: "Dalai Lama" },
-    { text: "Get busy living or get busy dying.", author: "Stephen King" },
-    { text: "You only live once, but if you do it right, once is enough.", author: "Mae West" },
-    { text: "The unexamined life is not worth living.", author: "Socrates" },
-    { text: "In three words I can sum up everything I've learned about life: it goes on.", author: "Robert Frost" },
-    { text: "To be yourself in a world that is constantly trying to make you something else is the greatest accomplishment.", author: "Ralph Waldo Emerson" },
-    { text: "The mind is everything. What you think you become.", author: "Buddha" },
-    { text: "Strive not to be a success, but rather to be of value.", author: "Albert Einstein" },
-    { text: "The best time to plant a tree was 20 years ago. The second best time is now.", author: "Chinese Proverb" },
-    { text: "An unexamined life is not worth living.", author: "Socrates" },
-    { text: "Your time is limited, so don't waste it living someone else's life.", author: "Steve Jobs" },
-    { text: "If life were predictable it would cease to be life, and be without flavor.", author: "Eleanor Roosevelt" },
-    { text: "The whole secret of a successful life is to find out what is one's destiny to do, and then do it.", author: "Henry Ford" },
-    { text: "Life is really simple, but we insist on making it complicated.", author: "Confucius" },
-    { text: "May you live all the days of your life.", author: "Jonathan Swift" },
-    { text: "The greatest glory in living lies not in never falling, but in rising every time we fall.", author: "Nelson Mandela" },
-    { text: "Do not go where the path may lead, go instead where there is no path and leave a trail.", author: "Ralph Waldo Emerson" },
-    { text: "Everything you've ever wanted is on the other side of fear.", author: "George Addair" },
-    { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
-    { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
-    { text: "Act as if what you do makes a difference. It does.", author: "William James" },
-    { text: "What we achieve inwardly will change outer reality.", author: "Plutarch" },
-    { text: "The only impossible journey is the one you never begin.", author: "Tony Robbins" },
-    { text: "Happiness is not something ready made. It comes from your own actions.", author: "Dalai Lama" },
-    { text: "Creativity is intelligence having fun.", author: "Albert Einstein" },
-    { text: "Do what you can, with what you have, where you are.", author: "Theodore Roosevelt" },
-    { text: "It always seems impossible until it's done.", author: "Nelson Mandela" },
-    { text: "The best way to predict the future is to create it.", author: "Peter Drucker" },
-    { text: "If you want to lift yourself up, lift up someone else.", author: "Booker T. Washington" },
-    { text: "We may encounter many defeats but we must not be defeated.", author: "Maya Angelou" },
-    { text: "Imagination is more important than knowledge.", author: "Albert Einstein" },
-    { text: "Nothing is impossible, the word itself says 'I'm possible'!", author: "Audrey Hepburn" },
-    { text: "Try to be a rainbow in someone's cloud.", author: "Maya Angelou" },
-    { text: "There is nothing permanent except change.", author: "Heraclitus" },
-    { text: "You must be the change you wish to see in the world.", author: "Mahatma Gandhi" },
-    { text: "What lies behind us and what lies before us are tiny matters compared to what lies within us.", author: "Ralph Waldo Emerson" },
-    { text: "Whoever is happy will make others happy too.", author: "Anne Frank" },
-    { text: "The only limit to our realization of tomorrow will be our doubts of today.", author: "Franklin D. Roosevelt" },
-    { text: "It is never too late to be what you might have been.", author: "George Eliot" },
-    { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
-    { text: "Don't count the days, make the days count.", author: "Muhammad Ali" },
-    { text: "If you look at what you have in life, you'll always have more.", author: "Oprah Winfrey" },
-    { text: "Life shrinks or expands in proportion to one's courage.", author: "Anaïs Nin" },
-    { text: "Stay hungry, stay foolish.", author: "Steve Jobs" },
-    { text: "We become what we think about most of the time.", author: "Earl Nightingale" },
-    { text: "The journey of a thousand miles begins with one step.", author: "Lao Tzu" },
-    { text: "You miss 100% of the shots you don't take.", author: "Wayne Gretzky" },
-    { text: "Whether you think you can or you think you can't, you're right.", author: "Henry Ford" },
-    { text: "I have not failed. I've just found 10,000 ways that won't work.", author: "Thomas Edison" },
-    { text: "A person who never made a mistake never tried anything new.", author: "Albert Einstein" },
-    { text: "The two most important days in your life are the day you are born and the day you find out why.", author: "Mark Twain" },
-    { text: "The best revenge is massive success.", author: "Frank Sinatra" },
-    { text: "In the end, it's not the years in your life that count. It's the life in your years.", author: "Abraham Lincoln" },
-    { text: "Not how long, but how well you have lived is the main thing.", author: "Seneca" },
-    { text: "If you want to be happy, be.", author: "Leo Tolstoy" },
-    { text: "The only person you are destined to become is the person you decide to be.", author: "Ralph Waldo Emerson" },
-    { text: "Go confidently in the direction of your dreams. Live the life you have imagined.", author: "Henry David Thoreau" },
-    { text: "When you reach the end of your rope, tie a knot in it and hang on.", author: "Franklin D. Roosevelt" },
-    { text: "There is no charm equal to tenderness of heart.", author: "Jane Austen" },
-    { text: "You are never too old to set another goal or to dream a new dream.", author: "C.S. Lewis" },
-    { text: "Spread love everywhere you go. Let no one ever come to you without leaving happier.", author: "Mother Teresa" },
-    { text: "It is our choices that show what we truly are, far more than our abilities.", author: "J.K. Rowling" },
-    { text: "The power of imagination makes us infinite.", author: "John Muir" },
-    { text: "Every moment is a fresh beginning.", author: "T.S. Eliot" },
-    { text: "What we think, we become.", author: "Buddha" },
-    { text: "All limitations are self-imposed.", author: "Oliver Wendell Holmes" },
-    { text: "One day or day one. You decide.", author: "Paulo Coelho" },
-    { text: "Dream big and dare to fail.", author: "Norman Vaughan" },
-    { text: "What you get by achieving your goals is not as important as what you become by achieving your goals.", author: "Zig Ziglar" },
-    { text: "Well done is better than well said.", author: "Benjamin Franklin" },
-    { text: "The best way out is always through.", author: "Robert Frost" },
-    { text: "If I cannot do great things, I can do small things in a great way.", author: "Martin Luther King Jr." },
-    { text: "Don't wait. The time will never be just right.", author: "Napoleon Hill" },
-    { text: "Everything has beauty, but not everyone sees it.", author: "Confucius" },
-    { text: "How wonderful it is that nobody need wait a single moment before starting to improve the world.", author: "Anne Frank" },
-    { text: "Darkness cannot drive out darkness; only light can do that.", author: "Martin Luther King Jr." },
-    { text: "Be yourself; everyone else is already taken.", author: "Oscar Wilde" },
-    { text: "The sun himself is weak when he first rises, and gathers strength and courage as the day gets on.", author: "Charles Dickens" },
-    { text: "We know what we are, but know not what we may be.", author: "William Shakespeare" },
-    { text: "No act of kindness, no matter how small, is ever wasted.", author: "Aesop" },
-    { text: "To live is the rarest thing in the world. Most people exist, that is all.", author: "Oscar Wilde" },
-    { text: "The earth has music for those who listen.", author: "William Shakespeare" },
-    { text: "Turn your wounds into wisdom.", author: "Oprah Winfrey" },
-    { text: "Keep your face always toward the sunshine — and shadows will fall behind you.", author: "Walt Whitman" },
-    { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
-    { text: "With the new day comes new strength and new thoughts.", author: "Eleanor Roosevelt" },
-    { text: "A beautiful thing is never perfect.", author: "Egyptian Proverb" },
-    { text: "Never bend your head. Always hold it high. Look the world straight in the eye.", author: "Helen Keller" },
-    { text: "Have no fear of perfection — you'll never reach it.", author: "Salvador Dalí" },
-    { text: "A champion is defined not by their wins but by how they can recover when they fall.", author: "Serena Williams" },
-    { text: "Dwell on the beauty of life. Watch the stars, and see yourself running with them.", author: "Marcus Aurelius" },
-    { text: "Every strike brings me closer to the next home run.", author: "Babe Ruth" },
-    { text: "To succeed in life, you need two things: ignorance and confidence.", author: "Mark Twain" },
-    { text: "Live as if you were to die tomorrow. Learn as if you were to live forever.", author: "Mahatma Gandhi" },
-    { text: "What is not started today is never finished tomorrow.", author: "Johann Wolfgang von Goethe" },
-    { text: "I find that the harder I work, the more luck I seem to have.", author: "Thomas Jefferson" },
-    { text: "The only way to have a friend is to be one.", author: "Ralph Waldo Emerson" },
-    { text: "Nobody can make you feel inferior without your consent.", author: "Eleanor Roosevelt" },
-    { text: "Life is a succession of lessons which must be lived to be understood.", author: "Helen Keller" },
-    { text: "Where there is love there is life.", author: "Mahatma Gandhi" },
-    { text: "First, have a definite, clear practical ideal; a goal, an objective.", author: "Aristotle" },
-    { text: "Those who dare to fail miserably can achieve greatly.", author: "John F. Kennedy" },
-    { text: "What great thing would you attempt if you knew you could not fail?", author: "Robert H. Schuller" },
-    { text: "Love the life you live. Live the life you love.", author: "Bob Marley" },
-    { text: "Life is either a daring adventure or nothing at all.", author: "Helen Keller" },
-    { text: "Many of life's failures are people who did not realize how close they were to success when they gave up.", author: "Thomas Edison" },
-    { text: "The measure of who we are is what we do with what we have.", author: "Vince Lombardi" },
-    { text: "Be the change that you wish to see in the world.", author: "Mahatma Gandhi" },
-    { text: "Not everything that is faced can be changed, but nothing can be changed until it is faced.", author: "James Baldwin" },
-    { text: "Education is the most powerful weapon which you can use to change the world.", author: "Nelson Mandela" },
-    { text: "I alone cannot change the world, but I can cast a stone across the waters to create many ripples.", author: "Mother Teresa" },
-    { text: "Nothing in life is to be feared, it is only to be understood. Now is the time to understand more, so that we may fear less.", author: "Marie Curie" },
-    { text: "Embrace the glorious mess that you are.", author: "Elizabeth Gilbert" },
-    { text: "If opportunity doesn't knock, build a door.", author: "Milton Berle" },
-    { text: "The saddest aspect of life right now is that science gathers knowledge faster than society gathers wisdom.", author: "Isaac Asimov" },
-    { text: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", author: "Aristotle" },
-    { text: "Perfection is not attainable, but if we chase perfection we can catch excellence.", author: "Vince Lombardi" },
-    { text: "Find out who you are and do it on purpose.", author: "Dolly Parton" },
-    { text: "You can never cross the ocean until you have the courage to lose sight of the shore.", author: "Christopher Columbus" },
-    { text: "The question isn't who is going to let me; it's who is going to stop me.", author: "Ayn Rand" },
-    { text: "Every child is an artist. The problem is how to remain an artist once he grows up.", author: "Pablo Picasso" },
-    { text: "Challenges are what make life interesting and overcoming them is what makes life meaningful.", author: "Joshua J. Marine" },
-    { text: "If you change the way you look at things, the things you look at change.", author: "Wayne Dyer" },
-    { text: "A room without books is like a body without a soul.", author: "Marcus Tullius Cicero" },
-    { text: "Our lives begin to end the day we become silent about things that matter.", author: "Martin Luther King Jr." },
-    { text: "Begin anywhere.", author: "John Cage" },
-    { text: "When one door of happiness closes, another opens.", author: "Helen Keller" },
-    { text: "The most wasted of all days is one without laughter.", author: "Nicolas Chamfort" },
-    { text: "It is not in the stars to hold our destiny but in ourselves.", author: "William Shakespeare" },
-    { text: "You are braver than you believe, stronger than you seem, and smarter than you think.", author: "A.A. Milne" },
-    { text: "Everything you can imagine is real.", author: "Pablo Picasso" },
-    { text: "Whatever you are, be a good one.", author: "Abraham Lincoln" },
-    { text: "The wound is the place where the Light enters you.", author: "Rumi" },
-    { text: "Wisely and slow; they stumble that run fast.", author: "William Shakespeare" },
-    { text: "What lies behind us and what lies ahead of us are tiny matters compared to what lives within us.", author: "Henry David Thoreau" },
-    { text: "Stars can't shine without darkness.", author: "D.H. Sidebottom" },
-    { text: "Be happy for this moment. This moment is your life.", author: "Omar Khayyam" },
-    { text: "All that we see or seem is but a dream within a dream.", author: "Edgar Allan Poe" },
-    { text: "We are all in the gutter, but some of us are looking at the stars.", author: "Oscar Wilde" },
-    { text: "The only true wisdom is in knowing you know nothing.", author: "Socrates" },
-    { text: "Do one thing every day that scares you.", author: "Eleanor Roosevelt" },
-    { text: "Happiness depends upon ourselves.", author: "Aristotle" },
-    { text: "I think, therefore I am.", author: "René Descartes" },
-    { text: "To thine own self be true.", author: "William Shakespeare" },
-    { text: "The soul becomes dyed with the colour of its thoughts.", author: "Marcus Aurelius" },
-    { text: "Knowing yourself is the beginning of all wisdom.", author: "Aristotle" },
-    { text: "Out of your vulnerabilities will come your strength.", author: "Sigmund Freud" },
-    { text: "Yesterday is history, tomorrow is a mystery, today is a gift of God, which is why we call it the present.", author: "Bill Keane" },
-    { text: "I can be changed by what happens to me. But I refuse to be reduced by it.", author: "Maya Angelou" },
-    { text: "Real generosity toward the future lies in giving all to the present.", author: "Albert Camus" },
-    { text: "If we did all the things we are capable of, we would literally astound ourselves.", author: "Thomas Edison" },
-    { text: "Adventure is worthwhile in itself.", author: "Amelia Earhart" },
-    { text: "Simplicity is the keynote of all true elegance.", author: "Coco Chanel" },
-    { text: "The noblest pleasure is the joy of understanding.", author: "Leonardo da Vinci" },
-    { text: "Silence is a source of great strength.", author: "Lao Tzu" },
-    { text: "In a gentle way, you can shake the world.", author: "Mahatma Gandhi" },
-    { text: "Never let the fear of striking out keep you from playing the game.", author: "Babe Ruth" },
-    { text: "The only journey is the one within.", author: "Rainer Maria Rilke" },
-    { text: "Sometimes the most productive thing you can do is relax.", author: "Mark Black" },
-    { text: "Collect moments, not things.", author: "Unknown" },
-    { text: "Not all those who wander are lost.", author: "J.R.R. Tolkien" },
-    { text: "What is essential is invisible to the eye.", author: "Antoine de Saint-Exupéry" },
-    { text: "The best is yet to come.", author: "Frank Sinatra" },
-    { text: "Let us always meet each other with smile, for the smile is the beginning of love.", author: "Mother Teresa" },
-    { text: "To plant a garden is to believe in tomorrow.", author: "Audrey Hepburn" },
-    { text: "In the depth of winter, I finally learned that within me there lay an invincible summer.", author: "Albert Camus" },
-    { text: "There are years that ask questions and years that answer.", author: "Zora Neale Hurston" },
-    { text: "Music is the shorthand of emotion.", author: "Leo Tolstoy" },
-    { text: "Without music, life would be a mistake.", author: "Friedrich Nietzsche" },
-    { text: "One must still have chaos in oneself to be able to give birth to a dancing star.", author: "Friedrich Nietzsche" },
-    { text: "The creation of something new is not accomplished by the intellect but by the play instinct.", author: "Carl Jung" },
-    { text: "Hope is being able to see that there is light despite all of the darkness.", author: "Desmond Tutu" },
-    { text: "No one saves us but ourselves. No one can and no one may. We ourselves must walk the path.", author: "Buddha" },
-    { text: "The privilege of a lifetime is to become who you truly are.", author: "Carl Jung" },
-    { text: "Time you enjoy wasting is not wasted time.", author: "Marthe Troly-Curtin" },
-    { text: "Lost time is never found again.", author: "Benjamin Franklin" },
-    { text: "And still, I rise.", author: "Maya Angelou" },
-    { text: "We are the music makers, and we are the dreamers of dreams.", author: "Arthur O'Shaughnessy" },
-    { text: "Wheresoever you go, go with all your heart.", author: "Confucius" },
-    { text: "Start where you are. Use what you have. Do what you can.", author: "Arthur Ashe" },
-    { text: "If you can dream it, you can do it.", author: "Walt Disney" },
-    { text: "You have power over your mind — not outside events. Realize this, and you will find strength.", author: "Marcus Aurelius" }
+// ── Bundled fallback data ──
+const FALLBACK_FACTS = [
+    { text: "Honey never spoils. Archaeologists have found 3,000-year-old honey in Egyptian tombs that was still perfectly edible.", category: "Science" },
+    { text: "Octopuses have three hearts, nine brains, and blue blood.", category: "Nature" },
+    { text: "A teaspoon of a neutron star would weigh about 6 billion tons.", category: "Science" },
+    { text: "Bananas are slightly radioactive because they contain potassium-40.", category: "Science" },
+    { text: "A bolt of lightning is five times hotter than the surface of the Sun.", category: "Science" },
+    { text: "Sharks have been around longer than trees — 400 million years vs 350 million years.", category: "Nature" },
+    { text: "Water can boil and freeze at the same time — it's called the triple point.", category: "Science" },
+    { text: "Butterflies taste with their feet.", category: "Nature" },
+    { text: "Sea otters hold hands while sleeping so they don't drift apart.", category: "Nature" },
+    { text: "Cleopatra lived closer in time to the Moon landing than to the construction of the Great Pyramid.", category: "History" },
+    { text: "Oxford University is older than the Aztec Empire.", category: "History" },
+    { text: "Nintendo was founded in 1889 — they originally made playing cards.", category: "History" },
+    { text: "Scotland's national animal is the unicorn.", category: "Culture" },
+    { text: "The first computer bug was an actual bug — a moth found in a Harvard Mark II computer in 1947.", category: "Tech" },
+    { text: "The average smartphone has more computing power than all of NASA had during Apollo 11.", category: "Tech" },
+    { text: "Strawberries aren't actually berries, but bananas are.", category: "Food" },
+    { text: "Ketchup was once sold as medicine in the 1830s.", category: "Food" },
+    { text: "Russia spans 11 time zones.", category: "Geography" },
+    { text: "Canada has more lakes than the rest of the world combined.", category: "Geography" },
+    { text: "Venus is the only planet that spins clockwise.", category: "Space" },
+    { text: "A sunset on Mars appears blue.", category: "Space" },
+    { text: "It rains diamonds on Saturn and Jupiter.", category: "Space" },
+    { text: "A group of flamingos is called a \"flamboyance.\"", category: "Nature" },
+    { text: "Cows have best friends and get stressed when they are separated.", category: "Nature" },
+    { text: "The dot over the letters 'i' and 'j' is called a tittle.", category: "Language" },
+    { text: "If you shuffle a deck of cards properly, the resulting order has almost certainly never existed before.", category: "Science" },
+    { text: "The average cloud weighs about 1.1 million pounds.", category: "Science" },
+    { text: "There is a species of jellyfish (Turritopsis dohrnii) that is biologically immortal.", category: "Nature" },
+    { text: "LEGO is the world's largest tire manufacturer by number of tires produced.", category: "Culture" },
+    { text: "Google's original name was \"BackRub.\"", category: "Tech" }
 ];
 
+const FALLBACK_JOKES = [
+    { setup: "Why do programmers prefer dark mode?", punchline: "Because light attracts bugs." },
+    { setup: "Parallel lines have so much in common.", punchline: "It's a shame they'll never meet." },
+    { setup: "What do you call a fake noodle?", punchline: "An impasta." },
+    { setup: "Why don't scientists trust atoms?", punchline: "Because they make up everything." },
+    { setup: "What did the ocean say to the beach?", punchline: "Nothing, it just waved." },
+    { setup: "Why did the scarecrow win an award?", punchline: "He was outstanding in his field." },
+    { setup: "What do you call a bear with no teeth?", punchline: "A gummy bear." },
+    { setup: "Why don't eggs tell jokes?", punchline: "They'd crack each other up." },
+    { setup: "How does the Moon cut his hair?", punchline: "Eclipse it." },
+    { setup: "Why did the developer go broke?", punchline: "Because he used up all his cache." },
+    { setup: "A SQL query walks into a bar, sees two tables, and asks...", punchline: "\"Can I join you?\"" },
+    { setup: "Why do Java developers wear glasses?", punchline: "Because they can't C#." },
+    { setup: "What sits at the bottom of the sea and twitches?", punchline: "A nervous wreck." },
+    { setup: "I'm reading a book about anti-gravity.", punchline: "It's impossible to put down." },
+    { setup: "I would tell you a construction joke.", punchline: "But I'm still working on it." }
+];
+
+
+const CACHE_KEY = 'cachedFunContent';
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
 const Quotes = {
-    getTodayQuote() {
+    /**
+     * Fetch a random fun fact from the uselessfacts API.
+     * Returns { text, category } or null on failure.
+     */
+    async _fetchFact() {
+        try {
+            const res = await fetch('https://uselessfacts.jsph.pl/api/v2/facts/random?language=en');
+            if (!res.ok) return null;
+            const json = await res.json();
+            return { text: json.text, category: 'Fact' };
+        } catch {
+            return null;
+        }
+    },
+
+    /**
+     * Fetch a random joke from the Official Joke API.
+     * Returns { setup, punchline } or null on failure.
+     */
+    async _fetchJoke() {
+        try {
+            const res = await fetch('https://official-joke-api.appspot.com/random_joke');
+            if (!res.ok) return null;
+            const json = await res.json();
+            return { setup: json.setup, punchline: json.punchline };
+        } catch {
+            return null;
+        }
+    },
+
+    /**
+     * Get cached content or fetch fresh content if cache is stale/missing.
+     * Stores both a fact and a joke; randomly picks one to display.
+     */
+    async _getContent() {
+        // Check cache first
+        const cached = await Storage.getCache(CACHE_KEY);
+        if (cached && cached.fetchedAt && (Date.now() - cached.fetchedAt < CACHE_TTL)) {
+            return cached;
+        }
+
+        // Fetch fresh content (fact + joke in parallel)
+        const [fact, joke] = await Promise.all([
+            this._fetchFact(),
+            this._fetchJoke()
+        ]);
+
+        const content = {
+            fact: fact || this._randomFrom(FALLBACK_FACTS),
+            joke: joke || this._randomFrom(FALLBACK_JOKES),
+            fetchedAt: Date.now()
+        };
+
+        // Cache for 24h
+        await Storage.setCache(CACHE_KEY, content);
+        return content;
+    },
+
+    _randomFrom(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    },
+
+    /**
+     * Get today's display item — randomly picks between the cached fact or joke.
+     * Uses day-of-year so the same item shows for the full day.
+     */
+    _pickForToday(content) {
         const now = new Date();
         const dayOfYear = Math.floor(
             (now - new Date(now.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24)
         );
-        const index = dayOfYear % QUOTES.length;
-        return QUOTES[index];
+        // Alternate between fact and joke based on odd/even day
+        if (dayOfYear % 2 === 0) {
+            return { type: 'fact', data: content.fact };
+        } else {
+            return { type: 'joke', data: content.joke };
+        }
     },
 
-    render() {
-        const quote = this.getTodayQuote();
+    async render() {
         const el = document.getElementById('quote');
         if (!el) return;
 
-        el.innerHTML = `
-      <p class="quote-text">"${quote.text}"</p>
-      <p class="quote-author">— ${quote.author}</p>
-    `;
+        // Get content (from cache or API)
+        const content = await this._getContent();
+        const pick = this._pickForToday(content);
+
+        if (pick.type === 'joke' && pick.data.setup) {
+            // Joke format: setup + punchline
+            el.innerHTML = `
+        <p class="quote-text">${pick.data.setup}</p>
+        <p class="quote-punchline">${pick.data.punchline}</p>
+        <p class="quote-author">Joke</p>
+      `;
+        } else {
+            // Fun fact format
+            el.innerHTML = `
+        <p class="quote-text">${pick.data.text}</p>
+        <p class="quote-author">${pick.data.category || 'Fun Fact'}</p>
+      `;
+        }
         el.classList.add('fade-in');
     }
 };

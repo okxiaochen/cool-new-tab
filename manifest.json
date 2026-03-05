@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Cool New Tab",
   "version": "1.0.0",
-  "description": "A beautiful, minimalist new tab with dynamic backgrounds, world clock, weather, quotes, calendar & news.",
+  "description": "A beautiful, minimalist new tab with dynamic backgrounds, world clock, weather, fun facts, calendar & news.",
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
@@ -16,7 +16,9 @@
     "https://api.pexels.com/*",
     "https://api.openweathermap.org/*",
     "https://gnews.io/*",
-    "https://www.googleapis.com/*"
+    "https://www.googleapis.com/*",
+    "https://uselessfacts.jsph.pl/*",
+    "https://official-joke-api.appspot.com/*"
   ],
   "oauth2": {
     "client_id": "410369913352-lfoc0e0jsttngsc971vj6etvg03opdnq.apps.googleusercontent.com",
