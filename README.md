@@ -1,12 +1,12 @@
 # Cool New Tab ✨
 
-A beautiful, minimalist Chrome extension that replaces your new tab page with a dynamic dashboard featuring live backgrounds, weather, world clock, news, quotes, and Google Calendar integration.
+A beautiful, minimalist Chrome extension that replaces your new tab page with a dynamic dashboard featuring live backgrounds (photos or videos), weather, world clock, news, quotes, and Google Calendar integration.
 
 ![Cool New Tab](screenshot.png)
 
 ## Features
 
-- 🖼️ **Dynamic Backgrounds** — Stunning photos from Unsplash, auto-refreshing on your schedule
+- 🖼️ **Dynamic Backgrounds** — Choose between stunning photos (Unsplash) or looping videos (Pexels), auto-refreshing on your schedule
 - 🕐 **Clock & Greeting** — 12-hour format with personalized greetings based on time of day
 - 🌤️ **Weather** — Auto-detects your location or add cities manually (click to toggle °F/°C)
 - 🌍 **World Clock** — Track multiple timezones with AM/PM indicators
@@ -32,6 +32,7 @@ Click the ⚙️ gear icon (bottom-right) to open Settings, then configure:
 | Service | Get Key | Free Tier |
 |---------|---------|-----------|
 | [Unsplash](https://unsplash.com/developers) | Create an app → Access Key | 50 req/hour |
+| [Pexels](https://www.pexels.com/api/) | Sign up → API Key | 200 req/hour |
 | [OpenWeatherMap](https://openweathermap.org/api) | Sign up → API Keys | 1,000 calls/day |
 | [GNews](https://gnews.io/) | Sign up → Dashboard | 100 req/day |
 
@@ -61,7 +62,7 @@ cool-new-tab/
 ├── js/
 │   ├── app.js           # App initializer
 │   ├── storage.js       # Chrome storage wrapper with localStorage fallback
-│   ├── background.js    # Unsplash background fetcher with caching
+│   ├── background.js    # Background manager (Unsplash photos + Pexels videos)
 │   ├── clock.js         # 12-hour clock & greeting
 │   ├── weather.js       # Weather with geocoding & geolocation caching
 │   ├── worldclock.js    # Multi-timezone clocks
@@ -77,7 +78,7 @@ cool-new-tab/
 - **Vanilla JS** — No frameworks, no build step
 - **Chrome Extension Manifest V3**
 - **Google Fonts** — Inter & Outfit
-- **APIs** — Unsplash, OpenWeatherMap, GNews, Google Calendar
+- **APIs** — Unsplash, Pexels, OpenWeatherMap, GNews, Google Calendar
 
 ## License
 

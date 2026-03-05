@@ -72,6 +72,24 @@ body {
   transform: scale(1);
 }
 
+/* Video background (for dynamic/Pexels mode) */
+.background-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.background.video-mode {
+  background-image: none !important;
+}
+
+.background.video-mode .background-video {
+  display: block;
+}
+
 .background-overlay {
   position: fixed;
   inset: 0;
@@ -103,13 +121,6 @@ body {
   gap: 6px;
 }
 
-.top-right-row {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.top-right>.top-right-row>.widget,
 .top-right>.widget {
   background: transparent;
   border: none;
@@ -119,7 +130,6 @@ body {
   padding: 4px 0;
 }
 
-.top-right>.top-right-row>.widget:hover,
 .top-right>.widget:hover {
   transform: none;
   box-shadow: none;
@@ -289,41 +299,69 @@ body {
 
 /* --- World Clock Widget --- */
 #world-clock-widget {
-  min-width: 110px;
-}
-
-.world-clock-card {
   display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 16px;
+}
+
+.wc-card {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 3px 0;
+  text-align: center;
+  gap: 2px;
+  padding: 0 4px;
+  position: relative;
 }
 
-.world-clock-card+.world-clock-card {
-  border-top: none;
+.wc-card+.wc-card::before {
+  content: '';
+  position: absolute;
+  left: -9px;
+  top: 15%;
+  height: 70%;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.wc-city {
-  font-size: 0.62rem;
-  color: var(--text-tertiary);
-  flex: 1;
-  min-width: 55px;
+.wc-label {
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 400;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .wc-time {
-  font-size: 0.88rem;
-  font-weight: 500;
+  font-size: 1.05rem;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.3px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+  line-height: 1.2;
+}
+
+.wc-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .wc-day {
-  font-size: 0.58rem;
+  font-size: 0.55rem;
   color: var(--text-tertiary);
   text-transform: uppercase;
-  opacity: 0.7;
+  font-weight: 400;
+}
+
+.wc-offset {
+  font-size: 0.52rem;
+  font-weight: 600;
+  color: var(--accent);
+  opacity: 0.8;
+  font-variant-numeric: tabular-nums;
 }
 
 /* --- Calendar Widget (Compact, Top Right) --- */

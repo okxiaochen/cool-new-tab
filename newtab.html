@@ -21,17 +21,17 @@
 
 <body>
   <!-- Background Layer -->
-  <div id="background" class="background"></div>
+  <div id="background" class="background">
+    <video id="background-video" class="background-video" muted autoplay loop playsinline></video>
+  </div>
   <div class="background-overlay"></div>
 
   <!-- Main Content -->
   <main class="main-layout">
     <!-- Top Right: Weather + World Clock + Calendar -->
     <section class="top-right" id="top-right-area">
-      <div class="top-right-row">
-        <div id="weather-widget" class="widget"></div>
-        <div id="world-clock-widget" class="widget"></div>
-      </div>
+      <div id="weather-widget" class="widget"></div>
+      <div id="world-clock-widget" class="widget"></div>
       <div id="calendar-widget" class="widget"></div>
     </section>
 

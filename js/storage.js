@@ -6,7 +6,9 @@ const DEFAULTS = {
     name: '',
     backgroundTheme: 'nature',
     backgroundRefresh: 'daily', // 'every-tab', 'hourly', 'daily'
+    backgroundMode: 'static', // 'static' (Unsplash photo) or 'dynamic' (Pexels video)
     unsplashApiKey: '',
+    pexelsApiKey: '',
     weatherApiKey: '',
     newsApiKey: '',
     weatherLocations: [], // [{ name: 'New York', lat: 40.71, lon: -74.01 }]

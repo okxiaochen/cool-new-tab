@@ -39,6 +39,25 @@ const BACKGROUND_THEMES = [
   { value: 'desert', label: 'Desert' }
 ];
 
+const VIDEO_THEMES = [
+  { value: 'random', label: 'Random (All)' },
+  { value: 'nature', label: 'Nature' },
+  { value: 'ocean waves', label: 'Ocean Waves' },
+  { value: 'mountains landscape', label: 'Mountains' },
+  { value: 'aerial landscape', label: 'Aerial View' },
+  { value: 'city timelapse', label: 'City Timelapse' },
+  { value: 'rain', label: 'Rain' },
+  { value: 'sunset clouds', label: 'Sunset' },
+  { value: 'forest trees', label: 'Forest' },
+  { value: 'snow winter', label: 'Snow' },
+  { value: 'night sky stars', label: 'Night Sky' },
+  { value: 'fire flames', label: 'Fire' },
+  { value: 'underwater', label: 'Underwater' },
+  { value: 'aurora borealis', label: 'Aurora' },
+  { value: 'clouds sky', label: 'Clouds' },
+  { value: 'abstract motion', label: 'Abstract' }
+];
+
 const NEWS_CATEGORIES = [
   { value: 'general', label: 'General' },
   { value: 'world', label: 'World' },
@@ -125,9 +144,17 @@ const Settings = {
       <div class="settings-section">
         <h3 class="settings-section-title">Background</h3>
         <div class="settings-field">
+          <label for="setting-bg-mode">Mode</label>
+          <select id="setting-bg-mode">
+            <option value="static" ${(settings.backgroundMode || 'static') === 'static' ? 'selected' : ''}>📷 Static (Photo)</option>
+            <option value="dynamic" ${settings.backgroundMode === 'dynamic' ? 'selected' : ''}>🎬 Dynamic (Video)</option>
+          </select>
+          <p class="settings-hint" style="margin-top:4px;margin-bottom:0" id="bg-mode-hint">${(settings.backgroundMode || 'static') === 'dynamic' ? 'Requires a Pexels API key' : 'Requires an Unsplash API key'}</p>
+        </div>
+        <div class="settings-field">
           <label for="setting-bg-theme">Theme</label>
           <select id="setting-bg-theme">
-            ${BACKGROUND_THEMES.map(t => `<option value="${t.value}" ${settings.backgroundTheme === t.value ? 'selected' : ''}>${t.label}</option>`).join('')}
+            ${((settings.backgroundMode || 'static') === 'dynamic' ? VIDEO_THEMES : BACKGROUND_THEMES).map(t => `<option value="${t.value}" ${settings.backgroundTheme === t.value ? 'selected' : ''}>${t.label}</option>`).join('')}
           </select>
         </div>
         <div class="settings-field">
@@ -258,8 +285,12 @@ const Settings = {
         <h3 class="settings-section-title">API Keys</h3>
         <p class="settings-hint">Free keys required for some features. Your keys are stored locally and never shared.</p>
         <div class="settings-field">
-          <label for="setting-unsplash-key">Unsplash API Key</label>
+          <label for="setting-unsplash-key">Unsplash API Key <span style="font-size:0.65rem;color:var(--text-tertiary)">(for static bg)</span></label>
           <input type="password" id="setting-unsplash-key" value="${settings.unsplashApiKey || ''}" placeholder="Get one at unsplash.com/developers" />
+        </div>
+        <div class="settings-field">
+          <label for="setting-pexels-key">Pexels API Key <span style="font-size:0.65rem;color:var(--text-tertiary)">(for dynamic bg)</span></label>
+          <input type="password" id="setting-pexels-key" value="${settings.pexelsApiKey || ''}" placeholder="Get one at pexels.com/api" />
         </div>
         <div class="settings-field">
           <label for="setting-weather-key">OpenWeatherMap API Key</label>
@@ -279,14 +310,33 @@ const Settings = {
   },
 
   _bindEvents(content, currentSettings) {
+    // Background mode hint + theme list toggle
+    content.querySelector('#setting-bg-mode')?.addEventListener('change', (e) => {
+      const hint = content.querySelector('#bg-mode-hint');
+      if (hint) {
+        hint.textContent = e.target.value === 'dynamic' ? 'Requires a Pexels API key' : 'Requires an Unsplash API key';
+      }
+      // Swap theme options
+      const themeSelect = content.querySelector('#setting-bg-theme');
+      if (themeSelect) {
+        const themes = e.target.value === 'dynamic' ? VIDEO_THEMES : BACKGROUND_THEMES;
+        const currentVal = themeSelect.value;
+        themeSelect.innerHTML = themes.map(t => `<option value="${t.value}" ${t.value === currentVal ? 'selected' : ''}>${t.label}</option>`).join('');
+      }
+    });
+
     // Save button
     content.querySelector('#save-settings-btn')?.addEventListener('click', async () => {
       const oldTheme = currentSettings.backgroundTheme;
       const newTheme = content.querySelector('#setting-bg-theme')?.value || 'nature';
       const themeChanged = oldTheme !== newTheme;
+      const oldMode = currentSettings.backgroundMode || 'static';
+      const newMode = content.querySelector('#setting-bg-mode')?.value || 'static';
+      const modeChanged = oldMode !== newMode;
 
       const newSettings = {
         name: content.querySelector('#setting-name')?.value?.trim() || '',
+        backgroundMode: newMode,
         backgroundTheme: newTheme,
         backgroundRefresh: content.querySelector('#setting-bg-refresh')?.value || 'daily',
         showWeather: content.querySelector('#setting-show-weather')?.checked ?? true,
@@ -297,6 +347,7 @@ const Settings = {
         showNews: content.querySelector('#setting-show-news')?.checked ?? true,
         newsCategory: content.querySelector('#setting-news-category')?.value || 'general',
         unsplashApiKey: content.querySelector('#setting-unsplash-key')?.value?.trim() || '',
+        pexelsApiKey: content.querySelector('#setting-pexels-key')?.value?.trim() || '',
         weatherApiKey: content.querySelector('#setting-weather-key')?.value?.trim() || '',
         newsApiKey: content.querySelector('#setting-news-key')?.value?.trim() || '',
         weatherLocations: currentSettings.weatherLocations || [],
@@ -306,10 +357,12 @@ const Settings = {
 
       await Storage.setAll(newSettings);
 
-      // If theme changed, clear background cache so it refreshes
-      if (themeChanged) {
+      // If theme or mode changed, clear background cache so it refreshes
+      if (themeChanged || modeChanged) {
         await Storage.setCache('currentBackground', null);
         await Storage.setCache('prefetchedBackground', null);
+        await Storage.setCache('currentVideoBackground', null);
+        await Storage.setCache('prefetchedVideoBackground', null);
       }
 
       // Show save confirmation
